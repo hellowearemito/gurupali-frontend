@@ -91,9 +91,9 @@ function load_data(simulation) {
 		node
 			.append("circle")
 			.attr("r", 25)
+			.attr("stroke", (data) => {return color(data.group)})
+			.attr("stroke-width", "3px")
 			.attr("fill", "transparent")
-
-
 
         simulation
             .nodes(nodes)

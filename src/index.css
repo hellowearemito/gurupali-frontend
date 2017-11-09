@@ -8,7 +8,6 @@ body                    {margin: 0;}
 
 /* Network */
 .links line             {stroke: red;stroke-opacity: 0.6;}
-.nodes circle           {stroke: green;stroke-width: 1.5px;}
 
 /* Typography */
 h1                      {color: red;}
