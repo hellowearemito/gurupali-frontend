@@ -26,12 +26,21 @@ function organize_by_date(items) {
 }
 
 function load_data(simulation) {
-    d3.csv("edges.csv", function(error, edges) {
+    d3.queue()
+        .defer(d3.csv, "edges.csv")
+        .defer(d3.csv, "nodes.csv")
+    .await((error, edges, nodes) => {
         if (error) throw error;
         var color = d3.scaleOrdinal(d3.schemeCategory20);
 
-        var nodes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19].map((d) => {
-            return {"id": d, "group": d % 3}
+        nodes = nodes.map((d) => {
+            return {
+                "id": d.id,
+                //"value": d.weight,
+                "group": d.group,
+                "year": d.year,
+                "month": d.month,
+            }
         })
 
         var frames = [
@@ -51,11 +60,14 @@ function load_data(simulation) {
                 "target": d["to"],
                 "year": d["year"],
                 "month": d["month"],
-                "weight": d["weight"] / 50,
+                "weight": d["weight"],
             }
         })
         
         var organized_edges = organize_by_date(edges)
+        var organized_nodes = organize_by_date(nodes)
+        var first_frame_edges = organized_edges[frames[0][0]][frames[0][1]]
+        var first_frame_nodes = organized_nodes[frames[0][0]][frames[0][1]]
 
         var link = d3.select("svg").append("g")
             .attr("class", "links")
@@ -158,7 +170,6 @@ function load_data(simulation) {
                 .alpha(1)
                 .restart()
         }
-
     })
 }
 
