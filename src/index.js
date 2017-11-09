@@ -64,13 +64,36 @@ function load_data(simulation) {
             .enter().append("line")
             .attr("stroke-width", function(d) { return Math.sqrt(d.weight); });
 
-        var node = d3.select("svg").append("g")
+        var nodeEnter = d3.select("svg").append("g")
             .attr("class", "nodes")
             .selectAll("circle")
             .data(nodes)
-            .enter().append("circle")
-                .attr("r", 5)
-                .attr("fill", function(d) { return color(d.group); })
+            .enter()
+
+		var node = nodeEnter.append("g")
+
+		d3.select("svg")
+			.append("clipPath")
+			.attr("id", "circle-clip")
+			.append("circle")
+			.attr("r", 25)
+			.attr("fill", "transparent")
+
+		node
+			.append("image")
+			.attr("xlink:href", "https://i.stack.imgur.com/WCveg.jpg")
+			.attr("x", -30)
+			.attr("y", -30)
+			.attr("width", 60)
+			.attr("height", 60)
+			.attr("clip-path","url(#circle-clip)")
+
+		node
+			.append("circle")
+			.attr("r", 25)
+			.attr("fill", "transparent")
+
+
 
         simulation
             .nodes(nodes)
@@ -91,11 +114,14 @@ function load_data(simulation) {
                 .attr("x1", function(d) { return d.source.x; })
                 .attr("y1", function(d) { return d.source.y; })
                 .attr("x2", function(d) { return d.target.x; })
-                .attr("y2", function(d) { return d.target.y; });
+                .attr("y2", function(d) { return d.target.y; })
 
-            node
-                .attr("cx", function(d) { return d.x; })
-                .attr("cy", function(d) { return d.y; });
+			node
+				.attr("transform", function(d) {
+					return "translate(" + d.x + "," + d.y + ")";
+			});
+
+
         }
 
         function resize() {
