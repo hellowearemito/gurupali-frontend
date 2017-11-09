@@ -1,9 +1,14 @@
+/* Layout */
 body                    {margin: 0;}
-h1                      {color: red;}
-
-#timed, #static         {float: left;}
-#timed>*, #static>*     {margin: 1em; border: 1px solid silver;}
+#timed, #static         {float: left; position: relative;}
+#timed>*, #static>*     {margin: 1em; border: 1px solid silver; height: 100%;}
 #timed                  {width: 80%;}
 #static                 {width: 20%;}
 #static>*               {margin-left: 0;}
 
+/* Network */
+.links line             {stroke: red;stroke-opacity: 0.6;}
+.nodes circle           {stroke: green;stroke-width: 1.5px;}
+
+/* Typography */
+h1                      {color: red;}
