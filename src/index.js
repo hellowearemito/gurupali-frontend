@@ -35,7 +35,7 @@ function load_data(simulation) {
 
         nodes = nodes.map((d) => {
             return {
-                "id": d.id,
+                "id": d.id + " " + d.year + " " + d.month,
                 //"value": d.weight,
                 "group": d.group,
                 "year": d.year,
@@ -54,8 +54,8 @@ function load_data(simulation) {
 
         var edges = edges.map((d) => {
             return {
-                "source": d["from"],
-                "target": d["to"],
+                "source": d["from"] + " " + d.year + " " + d.month,
+                "target": d["to"] + " " + d.year + " " + d.month,
                 "year": d["year"],
                 "month": d["month"],
                 "weight": d["weight"],
@@ -70,7 +70,7 @@ function load_data(simulation) {
         var link = d3.select("svg").append("g")
             .attr("class", "links")
             .selectAll("line")
-            .data(organized_edges[2017][2])
+            .data(first_frame_edges)
             .enter().append("line")
             .attr("stroke-width", function(d) { return Math.sqrt(d.weight); });
 
@@ -106,11 +106,11 @@ function load_data(simulation) {
 			.attr("fill", "transparent")
 
         simulation
-            .nodes(nodes)
+            .nodes(first_frame_nodes)
             .on("tick", ticked)
 
         simulation.force("link")
-            .links(organized_edges[2017][2])
+            .links(first_frame_edges)
 
         resize()
         d3.select(window).on("resize", resize)
