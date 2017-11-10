@@ -2,7 +2,8 @@ function create_vis() {
     var width = document.getElementById("network").clientWidth
     var height = 500
 
-    return d3.select("#network").append("svg").attr("width", width).attr("height", height)
+    d3.select("#network").append("div").attr("id", "nodes")
+    d3.select("#network").append("div").attr("id", "edges")
 }
 
 function create_simulation() {
@@ -10,7 +11,7 @@ function create_simulation() {
     var height = 500
 
     return d3.forceSimulation()
-        .force("link", d3.forceLink().id(function(d) { console.log(d); return d.id; }).distance(100))
+        .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(100))
         .force("charge", d3.forceManyBody())
         .force("center", d3.forceCenter(width / 2, height / 2))
 }
@@ -20,9 +21,55 @@ function organize_by_date(items) {
 
     items.map((item) => {table[item["year"]] = {}})
     items.map((item) => {table[item["year"]][item["month"]] = []})
-    items.map((item) => {table[item["year"]][item["month"]].push(item)})
+    items.map((item) => {
+        var array = table[item["year"]][item["month"]]
+        if (array.indexOf(item) === -1)
+            array.push(item)}
+    )
 
     return table
+}
+
+function refreshNodes(nodes) {
+    var svgNodes = d3.select("#nodes")
+        .selectAll("p")
+        .data(nodes)
+
+    svgNodes
+        .text((d) => {return d.id})
+
+    svgNodes
+        .enter()
+        .append("p")
+        .text((d) => {return d.id})
+        .merge(svgNodes)
+
+    svgNodes.exit().remove()
+}
+
+function refreshEdges(edges) {
+    var svgEdges = d3.select("#edges")
+        .selectAll("p")
+        .data(edges)
+
+    svgEdges
+        .text((d) => {return d.source + "->" +d.target})
+
+    svgEdges
+        .enter()
+        .append("p")
+        .text((d) => {return d.source + "->" +d.target})
+        .merge(svgEdges)
+
+    svgEdges.exit().remove()
+}
+
+function refresh(nodes, edges, frame) {
+    var nodes = nodes[frame[0]][frame[1]]
+    var edges = edges[frame[0]][frame[1]]
+
+    refreshNodes(nodes)
+    refreshEdges(edges)
 }
 
 function load_data(simulation) {
@@ -31,8 +78,6 @@ function load_data(simulation) {
         .defer(d3.csv, "nodes.csv")
     .await((error, edges, nodes) => {
         if (error) throw error;
-        var color = d3.scaleOrdinal(d3.schemeCategory20);
-
         nodes = nodes.map((d) => {
             return {
                 "id": d.id + " " + d.year + " " + d.month,
@@ -42,7 +87,6 @@ function load_data(simulation) {
                 "month": d.month,
             }
         })
-
 
         var frames = [
            [2017, 1], [2017, 2], [2017, 3]
@@ -66,142 +110,13 @@ function load_data(simulation) {
         var organized_edges = organize_by_date(edges)
         var organized_nodes = organize_by_date(nodes)
 
-        console.log(organized_nodes)
-        var first_frame_edges = organized_edges[frames[0][0]][frames[0][1]]
-        var first_frame_nodes = organized_nodes[frames[0][0]][frames[0][1]]
+        refresh(organized_nodes, organized_edges, frames[0])
 
-        var link = d3.select("svg").append("g")
-            .attr("class", "links")
-            .selectAll("line")
-            .data(first_frame_edges)
-            .enter().append("line")
-            .attr("stroke-width", function(d) { return Math.sqrt(d.weight); });
-
-        var nodeEnter = d3.select("svg").append("g")
-            .attr("class", "nodes")
-            .selectAll("circle")
-            .data(first_frame_nodes)
-            .enter()
-
-		var node = nodeEnter.append("g")
-
-		d3.select("svg")
-			.append("clipPath")
-			.attr("id", "circle-clip")
-			.append("circle")
-			.attr("r", 25)
-			.attr("fill", "transparent")
-
-		node
-			.append("image")
-			.attr("xlink:href", "https://i.stack.imgur.com/WCveg.jpg")
-			.attr("x", -30)
-			.attr("y", -30)
-			.attr("width", 60)
-			.attr("height", 60)
-			.attr("clip-path","url(#circle-clip)")
-
-		node
-			.append("circle")
-			.attr("r", 25)
-			.attr("stroke", (data) => {return color(data.group)})
-			.attr("stroke-width", "3px")
-			.attr("fill", "transparent")
-
-        simulation
-            .nodes(first_frame_nodes)
-            .on("tick", ticked)
-
-        simulation.force("link")
-            .links(first_frame_edges)
-
-        resize()
-        d3.select(window).on("resize", resize)
-        d3.select("#timeline").on("change", () => {
-            var item = document.getElementById("timeline")
-            load_frame(frames[item.value])
-        })
-
-        function ticked() {
-            link
-                .attr("x1", function(d) { return d.source.x; })
-                .attr("y1", function(d) { return d.source.y; })
-                .attr("x2", function(d) { return d.target.x; })
-                .attr("y2", function(d) { return d.target.y; })
-
-			node
-				.attr("transform", function(d) {
-					return "translate(" + d.x + "," + d.y + ")";
-			});
-
-
-        }
-
-        function resize() {
-            var width = document.getElementById("network").clientWidth,
-                height = document.getElementById("network").clientHeight
-
-            d3.select("svg")
-                .attr("width", width)
-                .attr("height", height)
-
-            simulation
-                .force("center")
-                    .x(width / 2)
-                    .y(height / 2)
-
-            simulation
-                .alpha(1)
-                .restart()
-        }
-
-        function load_frame(item) {
-            var year = item[0],
-                month = item[1]
-            var edges = organized_edges[year][month]
-            var nodes = organized_nodes[year][month]
-
-            var link = d3.select("svg g")
-                .selectAll("line")
-                .data(edges)
-                .enter()
-                .append("line")
-            .attr("stroke-width", function(d) { return Math.sqrt(d.weight); });
-
-            link.merge(d3.select(".links").selectAll("line"))
-            link.exit().remove()
-
-            node
-                .append("image")
-                .attr("xlink:href", "https://i.stack.imgur.com/WCveg.jpg")
-                .attr("x", -30)
-                .attr("y", -30)
-                .attr("width", 60)
-                .attr("height", 60)
-                .attr("clip-path","url(#circle-clip)")
-
-            node
-                .append("circle")
-                .attr("r", 25)
-                .attr("stroke", (data) => {return color(data.group)})
-                .attr("stroke-width", "3px")
-                .attr("fill", "transparent")
-
-
-            nodeEnter.merge(d3.select(".nodes").selectAll("r"))
-            nodeEnter.exit().remove()
-
-            simulation
-                .nodes(nodes)
-                .on("tick", ticked)
-
-            simulation.force("link")
-                .links(edges)
-
-            simulation
-                .alpha(1)
-                .restart()
-        }
+        d3.select("#timeline")
+            .on("change", () => {
+                var x = document.getElementById("timeline").value
+                refresh(organized_nodes, organized_edges, frames[x])
+            })
     })
 }
 
