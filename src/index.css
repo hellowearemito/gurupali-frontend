@@ -7,7 +7,7 @@ body                    {margin: 0;}
 #static>*               {margin-left: 0;}
 
 /* Network */
-.links line             {stroke: red;stroke-opacity: 0.6;}
+#edges line             {stroke: red;stroke-opacity: 0.6;}
 
 /* Typography */
 h1                      {color: red;}

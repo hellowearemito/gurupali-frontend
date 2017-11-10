@@ -2,8 +2,31 @@ function create_vis() {
     var width = document.getElementById("network").clientWidth
     var height = 500
 
-    d3.select("#network").append("div").attr("id", "nodes")
-    d3.select("#network").append("div").attr("id", "edges")
+    var svg = d3.select("#network")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height)
+
+    svg.append("g").attr("id", "nodes")
+    svg.append("g").attr("id", "edges")
+}
+
+var ticked = function() {
+    var svgNodes = d3.select("#nodes")
+        .selectAll("circle")
+
+    var svgEdges = d3.select("#edges")
+        .selectAll("line")
+
+    svgEdges
+        .attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+    svgNodes
+        .attr("cx", function(d) { return d.x; })
+        .attr("cy", function(d) { return d.y; });
 }
 
 function create_simulation() {
@@ -32,16 +55,17 @@ function organize_by_date(items) {
 
 function refreshNodes(nodes) {
     var svgNodes = d3.select("#nodes")
-        .selectAll("p")
+        .selectAll("circle")
         .data(nodes)
 
     svgNodes
-        .text((d) => {return d.id})
+        .attr("r", (d) => {return d.weight * 10})
 
     svgNodes
         .enter()
-        .append("p")
-        .text((d) => {return d.id})
+        .append("circle")
+        .attr("r", (d) => {return d.weight * 10})
+        .attr("fill", "black")
         .merge(svgNodes)
 
     svgNodes.exit().remove()
@@ -49,27 +73,37 @@ function refreshNodes(nodes) {
 
 function refreshEdges(edges) {
     var svgEdges = d3.select("#edges")
-        .selectAll("p")
+        .selectAll("line")
         .data(edges)
 
     svgEdges
-        .text((d) => {return d.source + "->" +d.target})
+        .attr("stroke-width", (d) => {return d.weight * 5})
 
     svgEdges
         .enter()
-        .append("p")
-        .text((d) => {return d.source + "->" +d.target})
+        .append("line")
+        .attr("stroke-width", (d) => {return d.weight * 5})
         .merge(svgEdges)
 
     svgEdges.exit().remove()
 }
 
-function refresh(nodes, edges, frame) {
+function refreshSimulation(nodes, edges, simulation) {
+    simulation
+        .nodes(nodes)
+        .on("tick", ticked);
+
+    simulation.force("link")
+        .links(edges);   
+}
+
+function refresh(nodes, edges, frame, simulation) {
     var nodes = nodes[frame[0]][frame[1]]
     var edges = edges[frame[0]][frame[1]]
 
     refreshNodes(nodes)
     refreshEdges(edges)
+    refreshSimulation(nodes, edges, simulation)
 }
 
 function load_data(simulation) {
@@ -81,7 +115,7 @@ function load_data(simulation) {
         nodes = nodes.map((d) => {
             return {
                 "id": d.id + " " + d.year + " " + d.month,
-                //"value": d.weight,
+                "weight": d.weight,
                 "group": d.group,
                 "year": d.year,
                 "month": d.month,
@@ -110,12 +144,12 @@ function load_data(simulation) {
         var organized_edges = organize_by_date(edges)
         var organized_nodes = organize_by_date(nodes)
 
-        refresh(organized_nodes, organized_edges, frames[0])
+        refresh(organized_nodes, organized_edges, frames[0], simulation)
 
         d3.select("#timeline")
             .on("change", () => {
                 var x = document.getElementById("timeline").value
-                refresh(organized_nodes, organized_edges, frames[x])
+                refresh(organized_nodes, organized_edges, frames[x], simulation)
             })
     })
 }
