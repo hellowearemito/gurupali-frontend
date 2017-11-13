@@ -105,10 +105,8 @@ function organize_by_date(items) {
 }
 
 function get_profile_picture(profiles, id) {
-	console.log(id)
     id = id.split(" ")[0]
-	console.log(id)
-    return profiles[id][1].value
+    return "https://graph.facebook.com/" + id + "/picture?type=large"
 }
 
 function refreshNodes(nodes, profiles) {
