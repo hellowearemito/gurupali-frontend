@@ -7,8 +7,10 @@ var distanceScale = d3.scalePow()
 	.range([250, 50])
 
 var sameGroupDistanceScale = d3.scalePow()
-	.range([75, 30])
+	.range([75, 40])
 
+var nodeRadius = 15
+var nodeImageSize = nodeRadius * 2
 
 
 function create_vis() {
@@ -27,7 +29,7 @@ function create_vis() {
         .append("clipPath")
         .attr("id", "circle-clip")
         .append("circle")
-        .attr("r", 15)
+        .attr("r", nodeRadius)
         .attr("fill", "transparent")
 }
 
@@ -117,7 +119,7 @@ function refreshNodes(nodes, profiles) {
 	nodes = nodes.sort((d) => {return d.value})
     var svgNodes = d3.select("#nodes")
         .selectAll("g")
-        .data(nodes, (d) => {return d.id})
+        .data(nodes, id)
 
     svgNodes
         .select("circle")
@@ -132,17 +134,18 @@ function refreshNodes(nodes, profiles) {
 
     node
         .append("circle")
-        .attr("r", 15)
+        .attr("r", nodeRadius)
         .attr("fill", "transparent")
         .attr("stroke", (d) => {return color(d.group)})
+
 
     node
         .append("image")
             .attr("xlink:href", (d) => {return get_profile_picture(profiles, d.id)})
-            .attr("x", -30)
-            .attr("y", -30)
-            .attr("width", 60)
-            .attr("height", 60)
+            .attr("x", -nodeImageSize / 2)
+            .attr("y", -nodeImageSize / 2)
+            .attr("width", nodeImageSize)
+            .attr("height", nodeImageSize)
             .attr("clip-path","url(#circle-clip)")
 
     node.merge(svgNodes)
@@ -157,7 +160,7 @@ function refreshEdges(edges) {
 	edges = edges.sort((d) => {return d.target.value})
     var svgEdges = d3.select("#edges")
         .selectAll("line")
-        .data(edges, (d) => {return d.source.id + " " + d.target.id})
+        .data(edges, (d) => {return id(d.source) + " " + id(d.target)})
 
     svgEdges
         .attr("stroke-width", (d) => {return edgeWidthScale(d.value)})
@@ -275,7 +278,7 @@ function load_data(simulation) {
             .on("change", () => {
                 var x = document.getElementById("timeline").value
                 refresh(organized_nodes, organized_edges, frames[x], simulation, profiles)
-                simulation.alpha(.4).restart()
+                simulation.alpha(1).restart()
                 d3.select("#date span").text(frames[x][0] + "-" + frames[x][1]);
             })
     })
