@@ -13,6 +13,7 @@ var nodeRadius = 15
 var nodeImageSize = nodeRadius * 2
 
 
+
 function create_vis() {
     var width = document.getElementById("network").clientWidth
     var height = 500
@@ -34,6 +35,8 @@ function create_vis() {
 }
 
 var ticked = function() {
+    d3.selectAll("#network g, #network line").interrupt()
+    var transitionDuration = 1500
     var svgNodes = d3.select("#nodes")
         .selectAll("g")
 
@@ -42,6 +45,7 @@ var ticked = function() {
 
     svgEdges
         .transition()
+        .duration(transitionDuration)
         .attr("x1", function(d) { return d.source.x; })
         .attr("y1", function(d) { return d.source.y; })
         .attr("x2", function(d) { return d.target.x; })
@@ -49,6 +53,7 @@ var ticked = function() {
 
     svgNodes
         .transition()
+        .duration(transitionDuration)
         .attr("transform", function(d) {
             return "translate(" + d.x + "," + d.y + "), scale(" + nodeScaleScale(d.value) + ")"
         })
