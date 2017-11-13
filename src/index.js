@@ -4,7 +4,12 @@ var edgeWidthScale = d3.scaleLinear()
 var nodeScaleScale = d3.scaleLinear()
 	.range([.8, 1.6])
 var distanceScale = d3.scalePow()
-	.range([250, 25])
+	.range([250, 50])
+
+var sameGroupDistanceScale = d3.scalePow()
+	.range([75, 30])
+
+
 
 function create_vis() {
     var width = document.getElementById("network").clientWidth
@@ -74,13 +79,12 @@ function create_simulation() {
 			if (d.source.group !== d.target.group)
 				return distanceScale(d.value)
 			else
-				return Math.min(distanceScale(d.value), 50)
+				return sameGroupDistanceScale(d.value)
 
 		}))
-        .force("charge", d3.forceManyBody().strength(-80))
+        .force("charge", d3.forceManyBody().strength(-300))
 		.force("x", d3.forceX())
 		.force("y", d3.forceY())
-		.alphaTarget(1)
         .force("center", d3.forceCenter(width / 2, height / 2))
 
     resize(simulation)()
