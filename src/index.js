@@ -41,12 +41,14 @@ var ticked = function() {
         .selectAll("line")
 
     svgEdges
+        .transition()
         .attr("x1", function(d) { return d.source.x; })
         .attr("y1", function(d) { return d.source.y; })
         .attr("x2", function(d) { return d.target.x; })
         .attr("y2", function(d) { return d.target.y; })
 
     svgNodes
+        .transition()
         .attr("transform", function(d) {
             return "translate(" + d.x + "," + d.y + "), scale(" + nodeScaleScale(d.value) + ")"
         })
@@ -67,9 +69,9 @@ function resize(simulation) {
             .x(width / 2)
             .y(height / 2)
 
-        simulation
-            .alpha(1)
-            .restart()
+        //simulation
+            //.alpha(1)
+            //.restart()
     }
 }
 
@@ -116,7 +118,14 @@ function get_profile_picture(profiles, id) {
 }
 
 function refreshNodes(nodes, profiles) {
+    var width = document.getElementById("network").clientWidth,
+        height = document.getElementById("network").clientHeight
 	nodes = nodes.sort((d) => {return d.value})
+    nodes.map((n) => {
+        n.x = n.x === undefined ? width / 2 : n.x
+        n.y = n.y === undefined ? height / 2 : n.y
+    })
+
     var svgNodes = d3.select("#nodes")
         .selectAll("g")
         .data(nodes, id)
@@ -130,6 +139,9 @@ function refreshNodes(nodes, profiles) {
         .enter()
         .append("g")
         .attr("stroke", "black")
+        .attr("transform", function(d) {
+            return "translate(" + d.x + "," + d.y + "), scale(" + nodeScaleScale(d.value) + ")"
+        })
 		.on("click", function(d) {select_profile(profiles[d.real_id])})
 
     node
@@ -156,6 +168,8 @@ function refreshNodes(nodes, profiles) {
 }
 
 function refreshEdges(edges) {
+    var width = document.getElementById("network").clientWidth,
+        height = document.getElementById("network").clientHeight
 	edges = edges.sort((d) => {return d.source.value})
 	edges = edges.sort((d) => {return d.target.value})
     var svgEdges = d3.select("#edges")
@@ -165,10 +179,15 @@ function refreshEdges(edges) {
     svgEdges
         .attr("stroke-width", (d) => {return edgeWidthScale(d.value)})
 
+
     svgEdges
         .enter()
         .append("line")
         .attr("stroke-width", (d) => {return edgeWidthScale(d.value)})
+        .attr("x1", function(d) { return d.source.x !== undefined ? d.source.x : width / 2 })
+        .attr("y1", function(d) { return d.source.y !== undefined ? d.source.y : height / 2 })
+        .attr("x2", function(d) { return d.target.x !== undefined ? d.source.x : width / 2 })
+        .attr("y2", function(d) { return d.target.y !== undefined ? d.source.y : height / 2 })
         .merge(svgEdges)
 
     svgEdges.exit().remove()
@@ -181,6 +200,13 @@ function refreshSimulation(nodes, edges, simulation) {
 
     simulation.force("link")
         .links(edges);
+
+    simulation.alpha(1).restart();
+    for (var i = 0, n = Math.ceil(Math.log(simulation.alphaMin()) / Math.log(1 - simulation.alphaDecay())); i < n; ++i) {
+        simulation.tick();
+    }
+    simulation.stop();
+    ticked()
 }
 
 function id(node) {
@@ -272,13 +298,13 @@ function load_data(simulation) {
         var organized_edges = organize_by_date(edges)
         var organized_nodes = organize_by_date(nodes)
 
-        refresh(organized_nodes, organized_edges, frames[0], simulation, profiles)
+        refresh(organized_nodes, organized_edges, frames[4], simulation, profiles)
 
         d3.select("#timeline")
             .on("change", () => {
                 var x = document.getElementById("timeline").value
                 refresh(organized_nodes, organized_edges, frames[x], simulation, profiles)
-                simulation.alpha(1).restart()
+                //simulation.alpha(1).restart()
                 d3.select("#date span").text(frames[x][0] + "-" + frames[x][1]);
             })
     })
