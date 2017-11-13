@@ -1,0 +1,25 @@
+/* Layout */
+body                    {margin: 0; overflow: hidden;} 
+#timed, #static         {float: left; position: relative;}
+#timed>*, #static>*     {height: 100%;}
+#timed                  {width: 80%;}
+#static                 {width: 20%; overflow-y: auto;}
+#profile				{margin: 1em;}
+.minichart 				{width: 100%; margin: 2em 0;}
+#date					{position: absolute; left: 0; top: 0;}
+
+/* Network */
+#edges line             {stroke: #3e62ad;stroke-opacity: 0.6;}
+#nodes circle           {stroke-width: 8px}
+
+/* Typography */
+h1                      {}
+#date					{font-size: 24px;}
+
+/* Slider */
+.slider                 {width: 100%; margin: 0;
+                         border-bottom: 1px solid silver;}
+
+/* Colors */
+body					{background: #f1f1f1}
+#static					{background: #e0e0e0}
