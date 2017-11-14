@@ -48,11 +48,26 @@ var ticked = function() {
 
     svgEdges
         .transition()
-        .duration(transitionDuration)
-        .attr("x1", function(d) { return d.source.x; })
-        .attr("y1", function(d) { return d.source.y; })
-        .attr("x2", function(d) { return d.target.x; })
-        .attr("y2", function(d) { return d.target.y; })
+        .duration((d) => {return transitionDurationScale(d.source.value)})
+        .attrTween("x1", function(d) { return d3.interpolateNumber(this.getAttribute("x1"), d.source.x); })
+        .attrTween("y1", function(d) { return d3.interpolateNumber(this.getAttribute("y1"), d.source.y); })
+        .transition()
+        .duration(700)
+        .attr("opacity", .6)
+
+    svgEdges.append("g")
+        .transition()
+        .duration((d) => {return transitionDurationScale(d.target.value)})
+        .attrTween("x2", function(d) {
+            var parent_ = d3.select(this.parentNode)
+            var i = d3.interpolateNumber(parent_.attr("x2"), d.target.x)
+            return function(t) { parent_.attr("x2", i(t)) }
+        })
+        .attrTween("y2", function(d) {
+            var parent_ = d3.select(this.parentNode)
+            var i = d3.interpolateNumber(parent_.attr("y2"), d.target.y)
+            return function(t) { parent_.attr("y2", i(t)) }
+        })
 
     svgNodes
         .transition()
@@ -200,6 +215,7 @@ function refreshEdges(edges) {
     svgEdges
         .enter()
         .append("line")
+        .attr("opacity", 0)
         .attr("stroke-width", (d) => {return edgeWidthScale(d.value)})
         .attr("x1", function(d) { return d.source.x !== undefined ? d.source.x : width / 2 })
         .attr("y1", function(d) { return d.source.y !== undefined ? d.source.y : height / 2 })
