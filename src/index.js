@@ -37,6 +37,8 @@ function create_vis() {
 var ticked = function() {
     d3.selectAll("#network g, #network line").interrupt()
     var transitionDuration = 1500
+    var transitionDurationScale = d3.scaleLinear()
+        .range([2000,1000])
     var svgNodes = d3.select("#nodes")
         .selectAll("g")
 
@@ -53,7 +55,7 @@ var ticked = function() {
 
     svgNodes
         .transition()
-        .duration(transitionDuration)
+        .duration((d) => {return transitionDurationScale(d.value)})
         .attr("transform", function(d) {
             return "translate(" + d.x + "," + d.y + "), scale(" + nodeScaleScale(d.value) + ")"
         })
