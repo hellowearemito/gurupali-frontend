@@ -11,6 +11,7 @@ var sameGroupDistanceScale = d3.scalePow()
 
 var nodeRadius = 15
 var nodeImageSize = nodeRadius * 2
+var group_positions = {}
 
 
 
@@ -82,6 +83,15 @@ function resize(simulation) {
     }
 }
 
+function get_group_position(group, width, height) {
+    var fallback = [width / 2, height / 2]
+
+    if (isNaN(group_positions[group])) return fallback
+    if (isNaN(group_positions[group][0])) return fallback
+    
+    return group_positions[group]
+}
+
 function create_simulation() {
     var width = document.getElementById("network").clientWidth
     var height = document.getElementById("network").clientHeight
@@ -94,8 +104,8 @@ function create_simulation() {
 
 		}))
         .force("charge", d3.forceManyBody().strength(-300))
-		.force("x", d3.forceX())
-		.force("y", d3.forceY())
+		.force("x", d3.forceX().x((d) => {return get_group_position(d.group, width, height)[0]}).strength(.3))
+		.force("y", d3.forceY().y((d) => {return get_group_position(d.group, width, height)[1]}).strength(.3))
         .force("center", d3.forceCenter(width / 2, height / 2))
 
     resize(simulation)()
@@ -214,6 +224,32 @@ function refreshSimulation(nodes, edges, simulation) {
     }
     simulation.stop();
     ticked()
+    analyze_group_coordinates(nodes)
+}
+
+function avg(x) {
+    return x.reduce((x, y) => {return x + y}) / x.length
+}
+
+function analyze_group_coordinates(nodes) {
+    var groups_x = {}
+    var groups_y = {}
+    nodes.map((d) => {
+        var group = d.group,
+            x = d.x,
+            y = d.y
+
+        if (groups_x[group] === undefined) {groups_x[group] = [], groups_y[group] = []}
+        groups_x[group].push(x)
+        groups_y[group].push(y)
+    })
+
+    Object.keys(groups_x).map((group) => {
+        group_positions[group] = [
+            avg(groups_x[group]),
+            avg(groups_y[group])
+        ]
+    })
 }
 
 function id(node) {
