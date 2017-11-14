@@ -303,7 +303,7 @@ function load_data(simulation) {
         var organized_edges = organize_by_date(edges)
         var organized_nodes = organize_by_date(nodes)
 
-        refresh(organized_nodes, organized_edges, frames[4], simulation, profiles)
+        refresh(organized_nodes, organized_edges, frames[0], simulation, profiles)
 
         d3.select("#timeline")
             .on("change", () => {
