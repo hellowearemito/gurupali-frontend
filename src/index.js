@@ -55,6 +55,7 @@ var ticked = function() {
         .duration(700)
         .attr("opacity", .6)
 
+    // Hack to animate the two ends of an edge separately
     svgEdges.append("g")
         .transition()
         .duration((d) => {return transitionDurationScale(d.target.value)})
@@ -162,6 +163,8 @@ function refreshNodes(nodes, profiles) {
         .selectAll("g")
         .data(nodes, id)
 
+    svgNodes.exit().remove()
+
     svgNodes
         .select("circle")
         .attr("stroke", (d) => {return color(d.group)})
@@ -172,7 +175,7 @@ function refreshNodes(nodes, profiles) {
         .append("g")
         .attr("stroke", "black")
         .attr("transform", function(d) {
-            return "translate(" + d.x + "," + d.y + "), scale(" + nodeScaleScale(d.value) + ")"
+            return "translate(" + d.x + "," + d.y + "), scale(0)"
         })
 		.on("click", function(d) {select_profile(profiles[d.real_id])})
 
@@ -194,9 +197,6 @@ function refreshNodes(nodes, profiles) {
 
     node.merge(svgNodes)
 
-    
-
-    svgNodes.exit().remove()
 }
 
 function refreshEdges(edges) {
@@ -295,6 +295,7 @@ function refresh(nodes, edges, frame, simulation, profiles) {
     var edges = filter_edges(edges[frame[0]][frame[1]])
     var nodes = filter_nodes(edges, nodes[frame[0]][frame[1]])
 
+    refreshSimulation(nodes, edges, simulation)
     refreshNodes(nodes, profiles)
     refreshEdges(edges)
     refreshSimulation(nodes, edges, simulation)
