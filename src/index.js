@@ -372,9 +372,9 @@ function load_data(simulation) {
 
 function select_profile(profile) {
 	d3.select("#personName").text(profile[0].value)
-	timeseries_continuous("#pagerank", profile[7].values, "Page rank")
-	timeseries_continuous("#closeness", profile[6].values, "Closeness")
-	timeseries_continuous("#posts", profile[4].values, "Posts")
+	timeseries_continuous("#pagerank", profile[6].values, "Page rank")
+	timeseries_continuous("#closeness", profile[5].values, "Closeness")
+	timeseries_continuous("#posts", profile[3].values, "Posts")
 }
 
 function timeseries_continuous(selector, data, name) {
