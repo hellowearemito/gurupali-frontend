@@ -310,7 +310,7 @@ function get_frames(nodes) {
     nodes.map((n) => {dict[n.year * 1][n.month * 1] = true})
     years = Object.keys(dict).sort()
     years.map((year) => {
-        var months = Object.keys(dict[year]).sort()
+        var months = Object.keys(dict[year]).sort((a, b) => {return a - b})
         months.map((month) => {
             result.push([year, month])
         })
